@@ -1,0 +1,14 @@
+{
+  "name": "http-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server with SSE transport over HTTP (Node.js)",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "express": "^4.21.2",
+    "cors": "^2.8.5"
+  }
+}
