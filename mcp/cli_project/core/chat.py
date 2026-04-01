@@ -15,6 +15,11 @@ class Chat:
         self.messages: list[MessageParam] = []
         _logger.info("Chat.__init__: clients=%s", list(clients.keys()))
 
+    def clear(self) -> None:
+        """Clear all conversation messages for this chat session."""
+        self.messages = []
+        _logger.info("clear: messages cleared")
+
     async def _process_query(self, query: str):
         self.messages.append({"role": "user", "content": query})
         _logger.debug("_process_query: appended user message, len(messages)=%d", len(self.messages))

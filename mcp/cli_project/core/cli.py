@@ -7,7 +7,7 @@ from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.auto_suggest import AutoSuggest, Suggestion
 from prompt_toolkit.document import Document
 from prompt_toolkit.buffer import Buffer
-
+import json
 from core.cli_chat import CliChat
 
 from core.log_config import get_logger
@@ -32,6 +32,10 @@ class CommandAutoSuggest(AutoSuggest):
 
         if len(parts) == 1:
             cmd = parts[0]
+
+            # /clear 不需要参数，直接提示整个命令
+            if "clear".startswith(cmd):
+                return Suggestion(" clear")
 
             if cmd in self.prompt_dict:
                 prompt = self.prompt_dict[cmd]
@@ -76,6 +80,15 @@ class UnifiedCompleter(Completer):
 
             if len(parts) <= 1 and not text.endswith(" "):
                 cmd_prefix = parts[0] if parts else ""
+
+                # 内置命令 /clear
+                if "clear".startswith(cmd_prefix):
+                    yield Completion(
+                        "clear",
+                        start_position=-len(cmd_prefix),
+                        display="/clear",
+                        display_meta="清除当前会话历史",
+                    )
 
                 for prompt in self.prompts:
                     if prompt.name.startswith(cmd_prefix):
@@ -210,7 +223,16 @@ class CliApp:
         while True:
             try:
                 user_input = await self.session.prompt_async("> ")
-                if not user_input.strip():
+                stripped = user_input.strip()
+                if not stripped:
+                    continue
+
+                # Handle special /clear command to reset conversation history
+                if stripped == "/clear":
+                    if hasattr(self.agent, "clear"):
+                        self.agent.clear()
+                    _logger.info("run: /clear command, conversation history cleared")
+                    print("\n[Conversation history cleared]\n")
                     continue
 
                 _logger.info("run: user_input=%s", user_input[:200] + "..." if len(user_input) > 200 else user_input)

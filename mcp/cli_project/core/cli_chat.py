@@ -25,7 +25,12 @@ class CliChat(Chat):
 
     async def list_prompts(self) -> list[Prompt]:
         prompts = await self.doc_client.list_prompts()
-        _logger.info("list_prompts: count=%d", len(prompts))
+        # Log count and prompt names only (Prompt objects themselves are not JSON-serializable)
+        _logger.info(
+            "list_prompts: count=%d names=%s",
+            len(prompts),
+            [p.name for p in prompts],
+        )
         return prompts
 
     async def list_docs_ids(self) -> list[str]:
@@ -72,6 +77,7 @@ class CliChat(Chat):
         messages = await self.doc_client.get_prompt(
             command, {"doc_id": words[1]}
         )
+        _logger.info("get_prompt: command=%s doc_id=%s count=%d %s", command, words[1] if len(words) > 1 else None, len(messages), [f"m.role={m.role} m.content={m.content}" for m in messages])
 
         self.messages += convert_prompt_messages_to_message_params(messages)
         _logger.info("_process_command: command=%s doc_id=%s", command, words[1] if len(words) > 1 else None)
